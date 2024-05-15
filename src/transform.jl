@@ -86,7 +86,10 @@ function stFlux(inputSize::NTuple{N}, m=2; outputPool = 2, poolBy = 3//2,
     signals can be determined. E.g., N=3 <=> 1D signals; N=4 <=> 2D images, etc.
     =#
     Nd = N - 2
-    # Now, setting the outputPool for multi layers
+    #= Now, setting the outputPool for multi layers
+    *** Need to fix for multidimensional cases where the user wants to set a 
+    different rate for each layer. *** 
+    =#
     if length(outputPool) == 1 # replicate for each dimension and layer
         outputPool = ntuple(k -> ntuple(i -> outputPool[1], Nd), m + 1)
     elseif length(outputPool) == m + 1 # replicate for each dimension
