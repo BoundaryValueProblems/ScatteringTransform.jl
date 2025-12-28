@@ -1,4 +1,5 @@
 # ScatteringTransform
+[![CI](https://github.com/BoundaryValueProblems/ScatteringTransform.jl/actions/workflows/CI.yml/badge.svg)](https://github.com/BoundaryValueProblems/ScatteringTransform.jl/actions/workflows/CI.yml)
 [![Stable](https://img.shields.io/badge/docs-stable-blue.svg)](https://BoundaryValueProblems.github.io/ScatteringTransform.jl/stable)
 [![Dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://BoundaryValueProblems.github.io/ScatteringTransform.jl/dev)
 [![Build Status](https://github.com/BoundaryValueProblems/ScatteringTransform.jl/actions/workflows/Documenter.yml/badge.svg)](https://github.com/BoundaryValueProblems/ScatteringTransform.jl/actions/workflows/Documenter.yml)
