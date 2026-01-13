@@ -15,7 +15,7 @@ For a comparable package in python, see [Kymatio](https://www.kymat.io/).
 ## Basic Example
 
 ```@setup
-using ScatteringTransform, ScatteringPlots, Wavelets, Plots
+using ScatteringTransform, Wavelets, Plots
 ```
 
 As an example signal, lets work with the doppler signal:
@@ -91,21 +91,12 @@ gif(anim, "sliceBySecond.gif", fps=1)
 ```
 
 For any fixed second layer frequency, we get approximately the curve in the first layer scalogram, with different portions emphasized, and the overall mass decreasing as the frequency increases, corresponding to the decreasing amplitude of the envelope for the doppler signal.
-These plots can also be created using
+These plots can also be created using various plotting utilities defined in this package. 
 
-From the companion package ScatteringPlots.jl, we have the denser representation:
+For eaxample, we have generate a denser representation with the `plotSecondLayer` function:
 
 ```@example ex
-using ScatteringPlots, LinearAlgebra
-
-# --- HOTFIX: Monkey-patch ScatteringPlots ---
-# The package ScatteringPlots uses 'norm' but didn't declare LinearAlgebra as a dependency.
-# We manually define 'norm' inside the ScatteringPlots module pointing to the real one.
-Core.eval(ScatteringPlots, :(norm = $(LinearAlgebra.norm)))
-
-# --------------------------------------------
-# Fix: Explicitly use the function from ScatteringPlots to avoid ambiguity
-ScatteringPlots.plotSecondLayer(sf, St)
+plotSecondLayer(sf, St)
 savefig("second.png") #hide
 ```
 
