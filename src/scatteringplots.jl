@@ -3,13 +3,13 @@
 """
 function plotFirstLayer1D(j, origLoc, original, cline=:darkrainbow)
 
-    space = plot(origLoc[1][:, :, j], line_z=(1:size(origLoc[1], 2))',
+    space = plot(origLoc[1][:, j, :], line_z=(1:size(origLoc[1], 2))',
         legend=false, colorbar=true, color=cline,
         title="first layer gradient wavelet $j varying location")
     org = plot([original original], line_z=([-20; 1:size(origLoc[1], 2)...])', legend=false, colorbar=true, color=cline) # todo: including the colorbar here is a real hack to get them to line up
-    ∇h = heatmap(origLoc[1][:, 1:end, j]', xlabel="space",
+    ∇h = heatmap(origLoc[1][:, j, :]', xlabel="space",
         ylabel="wavelet location", title="First layer gradient j=$j")
-    ∇̂h = heatmap(log.(abs.(rfft(origLoc[1][:, 1:end, j], 1)) .^ 2)', xlabel="frequency",
+    ∇̂h = heatmap(log.(abs.(rfft(origLoc[1][:, j, :], 1)) .^ 2)', xlabel="frequency",
         ylabel="wavelet location", title="Log Power Frequency domain j=$j")
     l = Plots.@layout [a; b{0.1h}; [b c]]
     plot(space, org, ∇h, ∇̂h, layout=l)
