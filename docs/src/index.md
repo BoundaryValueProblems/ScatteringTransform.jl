@@ -93,7 +93,7 @@ gif(anim, "sliceBySecond.gif", fps=1)
 For any fixed second layer frequency, we get approximately the curve in the first layer scalogram, with different portions emphasized, and the overall mass decreasing as the frequency increases, corresponding to the decreasing amplitude of the envelope for the doppler signal.
 These plots can also be created using various plotting utilities defined in this package. 
 
-For eaxample, we have generate a denser representation with the `plotSecondLayer` function:
+For example, we can generate a denser representation with the `plotSecondLayer` function:
 
 ```@example ex
 plotSecondLayer(sf, St)
