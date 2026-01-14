@@ -24,7 +24,7 @@ function gifFirstLayer(origLoc, firstSig, saveTo="gradientFigures/tmp.gif", fps=
         plotFirstLayer1D(j, origLoc, firstSig)
         frame(anim)
     end
-    gif(anim, saveTo, fps=2)
+    gif(anim, saveTo, fps=fps)
 end
 
 meanWave(wave) = sum(real.(range(0, stop=1, length=size(wave, 1)) .* wave), dims=1) ./ sum(real.(wave), dims=1)
