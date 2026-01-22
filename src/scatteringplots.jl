@@ -1,27 +1,68 @@
 """
-    plotFirstLayer1D(j,origLoc,cline=:darkrainbow)
+    plotFirstLayer1D(j, origLoc, original, cline=:darkrainbow)
 """
-function plotFirstLayer1D(j, origLoc, original, cline=:darkrainbow)
+function plotFirstLayer1D(j, origLoc, original, betterScaling=false, cline=:darkrainbow)
 
-    space = plot(origLoc[1][:, :, j], line_z=(1:size(origLoc[1], 2))',
+    space = plot(origLoc[1][:, j, :], line_z=(1:size(origLoc[1], 2))',
         legend=false, colorbar=true, color=cline,
         title="first layer gradient wavelet $j varying location")
     org = plot([original original], line_z=([-20; 1:size(origLoc[1], 2)...])', legend=false, colorbar=true, color=cline) # todo: including the colorbar here is a real hack to get them to line up
-    ∇h = heatmap(origLoc[1][:, 1:end, j]', xlabel="space",
+    ∇h = heatmap(origLoc[1][:, j, :]', xlabel="space",
         ylabel="wavelet location", title="First layer gradient j=$j")
-    ∇̂h = heatmap(log.(abs.(rfft(origLoc[1][:, 1:end, j], 1)) .^ 2)', xlabel="frequency",
+    ∇̂h = heatmap(log.(abs.(rfft(origLoc[1][:, j, :], 1)) .^ 2)', xlabel="frequency",
         ylabel="wavelet location", title="Log Power Frequency domain j=$j")
     l = Plots.@layout [a; b{0.1h}; [b c]]
-    plot(space, org, ∇h, ∇̂h, layout=l)
+    if betterScaling
+        plot(space, org, ∇h, ∇̂h, layout=l, size=(1200, 900), margin=5Plots.mm)
+    else
+        plot(space, org, ∇h, ∇̂h, layout=l)
+    end
 end
 
 """
-    gifFirstLayer(origLoc, saveTo="tmp.gif", fps = 2)
+    gifFirstLayer(origLoc, firstSig, saveTo="tmp.gif", fps = 2)
 """
-function gifFirstLayer(origLoc, firstSig, saveTo="gradientFigures/tmp.gif", fps=2)
+function gifFirstLayer(origLoc, firstSig, saveTo="gradientFigures/tmp.gif", fps=2, betterScaling=false)
+    anim = Animation()
+    for j = 1:size(origLoc[1])[end-1]
+        plotFirstLayer1D(j, origLoc, firstSig, betterScaling)
+        frame(anim)
+    end
+    gif(anim, saveTo, fps=fps)
+end
+
+# This code is designed to plot all wavelets in the first layer at once for a given example (Not as a moving GIF). 
+# It helps visualize how the wavelets interact across space and frequency. 
+"""
+    plotFirstLayer1DAll(j, origLoc, original, cline=:darkrainbow)
+"""
+function plotFirstLayer1DAll(j, origLoc, original, betterScaling=false, cline=:darkrainbow)
+
+    space = plot(origLoc[1][:, :, j], line_z=(1:size(origLoc[1], 2))',
+        legend=false, colorbar=true, color=cline,
+        title="first layer gradient wavelets")
+    if j==1 # only plot original signal once to save computation time. 
+        org = plot([original original], line_z=([-20; 1:size(origLoc[1], 2)...])', legend=false, colorbar=true, color=cline) # todo: including the colorbar here is a real hack to get them to line up
+    end
+    ∇h = heatmap(origLoc[1][:, 1:end, j]', xlabel="space",
+        ylabel="wavelet index", title="First layer gradients")
+    ∇̂h = heatmap(log.(abs.(rfft(origLoc[1][:, 1:end, j], 1)) .^ 2)', xlabel="frequency",
+        ylabel="wavelet index", title="Log Power Frequency domain")
+    l = Plots.@layout [a; b{0.1h}; [b c]]
+    if betterScaling
+        plot(space, org, ∇h, ∇̂h, layout=l, size=(1200, 900), margin=5Plots.mm)
+    else
+        plot(space, org, ∇h, ∇̂h, layout=l)
+    end
+end
+
+"""
+    plotFirstLayerAll(origLoc, firstSig, saveTo="gradientFigures/tmp2.gif", fps = 2)
+"""
+function plotFirstLayerAll(origLoc, firstSig, saveTo="gradientFigures/tmp2.gif", fps=2, betterScaling=false)
     anim = Animation()
     for j = 1:size(origLoc[1])[end]
-        plotFirstLayer1D(j, origLoc, firstSig)
+        plotFirstLayer1DAll(j, origLoc, firstSig, betterScaling)
         frame(anim)
     end
     gif(anim, saveTo, fps=fps)
