@@ -32,8 +32,7 @@ function gifFirstLayer(origLoc, origSig, saveTo="gradientFigures/tmp.gif", fps=2
     gif(anim, saveTo, fps=fps)
 end
 
-# This code is designed to plot all wavelets in the first layer at once for a given example (Not a moving GIF). 
-# It helps visualize how the wavelets interact across space and frequency. 
+
 """
     plotFirstLayer1DAll(j, origLoc, origSig, cline=:darkrainbow)
 Function that plots all first layer gradient wavelets for a specific example index `j` across space, along with the original signal. 
