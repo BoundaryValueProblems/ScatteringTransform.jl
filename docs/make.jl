@@ -3,6 +3,7 @@ ENV["GKSwstype"] = "100"
 ENV["LINES"] = "9"
 ENV["COLUMNS"] = "60"
 using Documenter, ScatteringTransform, ScatteringPlots
+mkpath("docs/src/figures")
 
 makedocs(
     sitename = "ScatteringTransform.jl",
