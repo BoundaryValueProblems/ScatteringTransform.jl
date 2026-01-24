@@ -7,13 +7,13 @@ using Documenter, ScatteringTransform, ScatteringPlots
 makedocs(
     sitename = "ScatteringTransform.jl",
     format = Documenter.HTML(),
-    modules = [ScatteringTransform],
-    checkdocs = :exports,
+    modules = [ScatteringTransform, ScatteringPlots],
     authors="David Weber, Naoki Saito",
     clean=true,
+    checkdocs = :exports,
     # This ignores the ContinuousWavelets warnings during doctests
     doctestfilters = [
-        r"(?:┌ Warning:.*\n(?:│.*\n)*└ @ ContinuousWavelets.*\n?)+"m,
+        r"┌ Warning:.*\n│.*\n└ @ ContinuousWavelets.*\n?"s,
     ],
     pages = Any[
          "Home" => "index.md",
