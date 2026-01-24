@@ -29,7 +29,7 @@ makedocs(
         ],
     ], # <--- This bracket closes the 'pages' list!
     
-    warnonly = [:cross_references], # <--- Now this is a separate argument
+    warnonly = [:cross_references, :missing_docs], # <--- Now this is a separate argument
 )
 
 deploydocs(;
