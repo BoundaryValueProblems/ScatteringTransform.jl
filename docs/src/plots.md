@@ -1,6 +1,6 @@
 # Plotting Scattering Transforms
 
-```@autodocs
+```@docs
 plotFirstLayer1D
 gifFirstLayer
 plotFirstLayer1DAll
