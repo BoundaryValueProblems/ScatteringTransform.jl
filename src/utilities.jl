@@ -51,16 +51,25 @@ Get a list of the mean frequencies for the filter bank in each layer. The averag
 julia> using ScatteringTransform
 
 julia> St = scatteringTransform((1024,1,1),2)
-stFlux{2, Nd=1, filters=[15], σ = abs, batchSize = 1, normalize = true}
+┌ Warning: there are wavelets whose peaks are far enough apart that the trough between them is less than half the height of the highest frequency wavelet
+│   minimalRegionComparedToLastPeak = 8.0292
+└ @ ContinuousWavelets ~/.julia/packages/ContinuousWavelets/KeITS/src/sanityChecks.jl:33
+┌ Warning: there are wavelets whose peaks are far enough apart that the trough between them is less than half the height of the highest frequency wavelet
+│   minimalRegionComparedToLastPeak = 9.2355
+└ @ ContinuousWavelets ~/.julia/packages/ContinuousWavelets/KeITS/src/sanityChecks.jl:33
+┌ Warning: there are wavelets whose peaks are far enough apart that the trough between them is less than half the height of the highest frequency wavelet
+│   minimalRegionComparedToLastPeak = 9.6864
+└ @ ContinuousWavelets ~/.julia/packages/ContinuousWavelets/KeITS/src/sanityChecks.jl:33
+stFlux{Nd=1, m=2, filters=[15, 14], σ = abs, batchSize = 1, normalize = true}
 
 julia> f1, f2, f3 = getMeanFreq(St);
 
 julia> f1'
 1×16 adjoint(::Vector{Float64}) with eltype Float64:
- 7.70368  54.4302  78.7967  …  315.712  338.416  18.6697
+ 7.70368  54.4302  78.7967  …  315.712  338.416  6.36036
 julia> f2'
 1×15 adjoint(::Vector{Float64}) with eltype Float64:
- 10.8253  64.1205  89.7788  …  296.729  317.265  22.1889
+ 10.8253  64.1205  89.7788  …  296.729  317.265  8.94436
 ```
 """
 function getMeanFreq(sc::stFlux{1}, δt=1000)
