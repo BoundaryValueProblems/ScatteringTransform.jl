@@ -7,6 +7,7 @@ using Documenter, ScatteringTransform, ScatteringPlots
 makedocs(
     sitename = "ScatteringTransform.jl",
     format = Documenter.HTML(),
+    modules = [ScatteringTransform],
     authors="David Weber, Naoki Saito",
     clean=true,
     # This ignores the ContinuousWavelets warnings during doctests
