@@ -33,7 +33,7 @@ function gifFirstLayer(origLoc, origSig, saveTo="gradientFigures/tmp.gif", fps=2
 end
 
 """
-    plotFirstLayer1DAll(index, origLoc, origSig, saveTo="gradientFigures/tmp2.png", cline=:darkrainbow)
+    plotFirstLayer1DAll(origLoc, origSig, saveTo="gradientFigures/tmp2.png", index=1, cline=:darkrainbow)
 Function that plots all first layer gradient wavelets for a specific example signal `index` across space, along with the original signal. 
 It also includes heatmaps of the gradient wavelets in both the spatial and frequency domains. 
 The variable `index` specifies which example in the batch to plot, `origLoc` is the `ScatteredOut` object 
