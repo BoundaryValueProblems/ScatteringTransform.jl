@@ -184,7 +184,7 @@ function plotSecondLayerFixAndVary(stw, St, firstLayerWavelets, secondLayerWavel
 end
 
 """
-    plotSecondLayer(stw; title="Second Layer results", xVals=-1, yVals=-1, logPower=true, toHeat=nothing, c=cgrad(:viridis, [0,.9]), threshold=0, linePalette=:greys, minLog=NaN, kwargs...)
+    plotSecondLayer(stw, St, index=1; title="Second Layer results", xVals=-1, yVals=-1, logPower=true, toHeat=nothing, c=cgrad(:viridis, [0,.9]), threshold=0, linePalette=:greys, minLog=NaN, kwargs...)
 TODO fix the similarity of these names.
 xVals and yVals give the spacing of the grid, as it doesn't seem to be done
 correctly by default. xVals gives the distance from the left and the right
@@ -193,7 +193,7 @@ also as a tuple. Default values are `xVals = (.037, .852), yVals = (.056, .939)`
 If you have no colorbar, set `xVals = (.0015, .997), yVals = (.002, .992)`
 In the case that arbitrary space has been introduced, if you have a title, use `xVals = (.037, .852), yVals = (.056, .939)`, or if you have no title, use `xVals = (.0105, .882), yVals = (.056, .939)`
 """
-function plotSecondLayer(stw::ScatteredOut, St, index; kwargs...)
+function plotSecondLayer(stw::ScatteredOut, St, index=1; kwargs...)
     secondLayerRes = stw[2]
     if ndims(secondLayerRes) > 3
         return plotSecondLayer(secondLayerRes[:, :, :, index], St; kwargs...)
