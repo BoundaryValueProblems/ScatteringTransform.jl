@@ -1,13 +1,13 @@
 # Plotting Scattering Transforms
 
 ```@docs
-plotFirstLayer1D
-gifFirstLayer
-plotFirstLayer1DAll
-plotFirstLayer
-plotSecondLayerSpecificPath
-plotSecondLayer1DSubsetGif
-plotSecondLayerFixAndVary
-plotSecondLayer
-jointPlot
+ScatteringTransform.plotFirstLayer1D
+ScatteringTransform.gifFirstLayer
+ScatteringTransform.plotFirstLayer1DAll
+ScatteringTransform.plotFirstLayer
+ScatteringTransform.plotSecondLayerSpecificPath
+ScatteringTransform.plotSecondLayer1DSubsetGif
+ScatteringTransform.plotSecondLayerFixAndVary
+ScatteringTransform.plotSecondLayer
+ScatteringTransform.jointPlot
 ```
