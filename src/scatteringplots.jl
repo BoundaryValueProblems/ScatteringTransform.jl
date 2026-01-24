@@ -1,74 +1,75 @@
 """
-    plotFirstLayer1D(j, origLoc, origSig)
+    plotFirstLayer1D(j, origLoc, origSig, index)
 Function that plots the first layer gradient wavelet at index `j` across space, along with the original signal. 
 It also includes heatmaps of the gradient wavelet in both the spatial and frequency domains. 
-The variable `j` specifies which wavelet to plot from the first layer, `origLoc` is the `ScatteredOut` object 
-containing the scattering transform results, and `origSig` is the original input signal. 
+The variable `j` specifies which wavelet to plot from the first layer, `index` specifies which example in the batch to plot, 
+`origLoc` is the `ScatteredOut` object containing the scattering transform results, and `origSig` is the original input signal. 
 """
-function plotFirstLayer1D(j, origLoc, origSig)
-    space = plot(origLoc[1][:, j, :], xlim=(0, length(origLoc[1][:, j, :])+1), legend=false, 
+function plotFirstLayer1D(j, origLoc, origSig, index=1)
+    space = plot(origLoc[1][:, j, index], xlim=(0, length(origLoc[1][:, j, index])+1), legend=false, 
         color=:red, title="First Layer - Gradient Wavelet $j - Varying Location")
-    org = plot(origSig, legend=false, color=:red, title="Original Signal", xlim=(0, length(origSig)+1))
-    ∇h = heatmap(origLoc[1][:, j, :]', xlabel="space", 
+    org = plot(origSig[:,:,index], legend=false, color=:red, title="Original Signal", xlim=(0, length(origSig[:,:,index])+1))
+    ∇h = heatmap(origLoc[1][:, j, index]', xlabel="space", 
         yticks=false, ylabel="", title="First Layer gradient - Wavelet j=$j")
-    ∇̂h = heatmap(log.(abs.(rfft(origLoc[1][:, j, :], 1)) .^ 2)', xlabel="frequency", 
+    ∇̂h = heatmap(log.(abs.(rfft(origLoc[1][:, j, index], 1)) .^ 2)', xlabel="frequency", 
         yticks=false, ylabel="", title="Log-power Frequency Domain - Wavelet j=$j")
     l = Plots.@layout [a; b{0.1h}; [b c]]
     plot(space, org, ∇h, ∇̂h, layout=l, size=(1200, 800), margin=5Plots.mm)
 end
 
 """
-    gifFirstLayer(origLoc, origSig, saveTo="tmp.gif", fps = 2)
+    gifFirstLayer(origLoc, origSig, saveTo="tmp.gif", fps = 2, index)
 Function to create a GIF visualizing all wavelets in the first layer across space for each example in the batch. 
-The variable `origLoc` is the `ScatteredOut` object containing the scattering transform results, `origSig` is the original input signal, 
-`saveTo` specifies the file path to save the GIF, and `fps` sets the frames per second for the GIF animation. 
+The variable `origLoc` is the `ScatteredOut` object containing the scattering transform results, `index` specifies which example in the batch to plot, 
+`origSig` is the original input signal, `saveTo` specifies the file path to save the GIF, and `fps` sets the frames per second for the GIF animation. 
 """
-function gifFirstLayer(origLoc, origSig, saveTo="gradientFigures/tmp.gif", fps=2)
+function gifFirstLayer(origLoc, origSig, saveTo="gradientFigures/tmp.gif", fps=2, index=1)
     anim = Animation()
     for j = 1:size(origLoc[1])[end-1]
-        plotFirstLayer1D(j, origLoc, origSig)
+        plotFirstLayer1D(j, origLoc, origSig, index)
         frame(anim)
     end
     gif(anim, saveTo, fps=fps)
 end
 
-
 """
-    plotFirstLayer1DAll(j, origLoc, origSig, cline=:darkrainbow)
-Function that plots all first layer gradient wavelets for a specific example index `j` across space, along with the original signal. 
+    plotFirstLayer1DAll(index, origLoc, origSig, saveTo="gradientFigures/tmp2.png", cline=:darkrainbow)
+Function that plots all first layer gradient wavelets for a specific example signal `index` across space, along with the original signal. 
 It also includes heatmaps of the gradient wavelets in both the spatial and frequency domains. 
-The variable `j` specifies which example in the batch to plot, `origLoc` is the `ScatteredOut` object 
-containing the scattering transform results, and `origSig` is the original input signal.
+The variable `index` specifies which example in the batch to plot, `origLoc` is the `ScatteredOut` object 
+containing the scattering transform results, `origSig` is the original input signal, and `saveTo` is the file path to save the plot.
 """
-function plotFirstLayer1DAll(j, origLoc, origSig, cline=:darkrainbow)
-    space = plot(origLoc[1][:, :, j], line_z=(1:size(origLoc[1], 2))', xlim=(0, length(origLoc[1][:, 1, 1])+1), 
+function plotFirstLayer1DAll(index, origLoc, origSig, saveTo="gradientFigures/tmp2.png", cline=:darkrainbow)
+    space = plot(origLoc[1][:, :, index], line_z=(1:size(origLoc[1], 2))', xlim=(0, length(origLoc[1][:, 1, index])+1), 
         legend=false, colorbar=true, color=cline, title="first layer gradient wavelets")
-    org = plot(origSig, legend=false, color=:red, title="Original Signal", xlim=(0, length(origSig)+1))
-    ∇h = heatmap(origLoc[1][:, 1:end, j]', xlabel="space",
+    org = plot(origSig[:,:,index], legend=false, color=:red, title="Original Signal", xlim=(0, length(origSig[:,:,index])+1))
+    ∇h = heatmap(origLoc[1][:, 1:end, index]', xlabel="space",
         ylabel="wavelet index", title="First Layer gradients")
-    ∇̂h = heatmap(log.(abs.(rfft(origLoc[1][:, 1:end, j], 1)) .^ 2)', xlabel="frequency",
+    ∇̂h = heatmap(log.(abs.(rfft(origLoc[1][:, 1:end, index], 1)) .^ 2)', xlabel="frequency",
         ylabel="wavelet index", title="Log-power Frequency Domain")
     l = Plots.@layout [a; b{0.1h}; [b c]]
-    plot(space, org, ∇h, ∇̂h, layout=l, size=(1200, 800), margin=5Plots.mm)
+    plt = plot(space, org, ∇h, ∇̂h, layout=l, size=(1200, 800), margin=5Plots.mm)
+    savefig(plt, saveTo)
 end
 
 """
-    plotFirstLayerAll(origLoc, firstSig, saveTo="gradientFigures/tmp2.gif", fps = 1)
-Function to create a GIF visualizing all wavelets in the first layer across space for each example in the batch. 
-The variable `origLoc` is the `ScatteredOut` object containing the scattering transform results, `firstSig` is the original input signal, 
-`saveTo` specifies the file path to save the GIF, and `fps` sets the frames per second for the GIF animation. With only one example, will just be a static image. 
+    plotFirstLayer(stw, St, saveTo="gradientFigures/firstLayer.png", index=1)
+Function that creates a heatmap of the first layer scattering transform results at a specified example index. 
+The variable `stw` is the scattered output, `St` is the scattering transform object, `saveTo` is the file 
+path to save the plot, and `index` specifies which example in the batch to plot.
 """
-function plotFirstLayerAll(origLoc, firstSig, saveTo="gradientFigures/tmp2.gif", fps=1)
-    anim = Animation()
-    for j = 1:size(origLoc[1])[end]
-        plotFirstLayer1DAll(j, origLoc, firstSig)
-        frame(anim)
-    end
-    gif(anim, saveTo, fps=fps)
+function plotFirstLayer(stw, St, saveTo="gradientFigures/firstLayer.png", index=1)
+    f1, f2, f3 = getMeanFreq(St) # the mean frequencies for the wavelets in each layer. 
+    plt = heatmap(1:size(stw[1], 1), f1[1:end-1], stw[1][:, :, index]', 
+            xlabel="time index", ylabel="Frequency (Hz)", 
+            color=:viridis, title="First Layer", size=(1200, 800))
+    savefig(plt, saveTo)
 end
+
 
 meanWave(wave) = sum(real.(range(0, stop=1, length=size(wave, 1)) .* wave), dims=1) ./ sum(real.(wave), dims=1)
 
+# As far as I can tell, this function is not used elsewhere. 
 """
     plotSecondLayer1D(loc, origLoc, wave1, wave2, original=false, subsamSz=(128,85,))
 """
@@ -101,14 +102,14 @@ function plotSecondLayer1D(loc, origLoc, wave1, wave2, original=false, subsamSz=
 end
 
 """
-    plotSecondLayerSpecificPath(stw, St, firstLayerWaveletIndex, secondLayerWaveletIndex, original)
-`stw` is the scattered output, `St` is the scattering transform object, `firstLayerWaveletIndex` and `secondLayerWaveletIndex` specify the path to plot, and `original` is the original signal. 
-This function creates a plot showing the original signal and the scattering result for the specified path. It also displays the mean frequencies associated with the selected wavelets. Finally, 
-it displays the log-power norm of the second layer signal for the specified path. This value is used elsewhere to create heatmaps of the second layer scattering results. 
+    plotSecondLayerSpecificPath(stw, St, firstLayerWaveletIndex, secondLayerWaveletIndex, original, index=1)
+`stw` is the scattered output, `St` is the scattering transform object, `firstLayerWaveletIndex` and `secondLayerWaveletIndex` specify the path to plot, `original` is the original signal, and `index` specifies 
+which example in the batch to plot. This function creates a plot showing the original signal and the scattering result for the specified path. It also displays the mean frequencies associated with the 
+selected wavelets. Finally, it displays the log-power norm of the second layer signal for the specified path. This value is used elsewhere to create heatmaps of the second layer scattering results. 
 """
-function plotSecondLayerSpecificPath(stw, St, firstLayerWaveletIndex, secondLayerWaveletIndex, original)
+function plotSecondLayerSpecificPath(stw, St, firstLayerWaveletIndex, secondLayerWaveletIndex, original, index=1)
     # Plot of original signal. 
-    org = plot(original, legend=false, color=:red, title="Original Signal", xlabel="time (samples)", ylabel="amplitude", xlims=(0, length(original)+1))
+    org = plot(original[:,:,index], legend=false, color=:red, title="Original Signal", xlabel="time (samples)", ylabel="amplitude", xlims=(0, length(original[:,:,index])+1))
     f1, f2, f3 = getMeanFreq(St)
     
     # Plot the signal for a specific path. 
@@ -118,11 +119,11 @@ function plotSecondLayerSpecificPath(stw, St, firstLayerWaveletIndex, secondLaye
                             "Second Layer Freq = $(round(signalLayer2Freq, sigdigits=3)) Hz",
                      grid=false, showaxis=false, xticks=nothing, yticks=nothing, bottom_margin=-5Plots.px, titlefontsize=11)
     
-    path_spatial = stw[2][:, secondLayerWaveletIndex, firstLayerWaveletIndex, 1]
+    path_spatial = stw[2][:, secondLayerWaveletIndex, firstLayerWaveletIndex, index]
     ∇h = plot(path_spatial, xlabel="time (samples)", ylabel="amplitude", title="Second Layer Plot", legend=false, linewidth=1.5, frame=:box, fill=0, fillalpha=0.5, 
               xlims=(0, length(path_spatial)), ylims=(0, maximum(path_spatial)*1.01))
-    
-    secondLayerNorm = log10.(norm(stw[2][:, secondLayerWaveletIndex, firstLayerWaveletIndex, 1]))
+
+    secondLayerNorm = log10.(norm(stw[2][:, secondLayerWaveletIndex, firstLayerWaveletIndex, index]))
     normPlot = plot(title="Second Layer Signal norm (log-power) = $(round(secondLayerNorm, sigdigits=4))",
                     grid=false, showaxis=false, xticks=nothing, yticks=nothing, titlefontsize=11, framestyle=:none)
     l = Plots.@layout [a{0.4h}; title{0.05h}; c; d{0.05h}]
@@ -130,16 +131,54 @@ function plotSecondLayerSpecificPath(stw, St, firstLayerWaveletIndex, secondLaye
 end
 
 """
-    plotSecondLayer1DSubsetGif(stw, St, firstLayerWavelets, secondLayerWavelets, original, saveTo="secondLayerFigures/tmp2.gif", fps=2)
-Create a GIF visualizing the second layer scattering results for specified subsets of wavelets from the first and second layers. 
-The variables `firstLayerWavelets` and `secondLayerWavelets` are arrays containing the indices of the wavelets to be visualized from the first and second layers, respectively. 
-For example, to visualize all the wavelets from the first layer with respect to a specific wavelet from the second layer, you can set `firstLayerWavelets = 1:size(stw[1], 2)` and `secondLayerWavelets = k`, where `k` is the index of the desired second layer wavelet.
+    plotSecondLayer1DSubsetGif(stw, St, firstLayerWavelets, secondLayerWavelets, original, saveTo="secondLayerFigures/tmp2.gif", fps=2, index=1)
+Create a GIF visualizing the second layer scattering results for specified subsets of wavelets from the first and second layers. The variables `firstLayerWavelets` and `secondLayerWavelets` are arrays 
+containing the indices of the wavelets to be visualized from the first and second layers, respectively. For example, to visualize all the wavelets from the first layer with respect to a specific 
+wavelet from the second layer, you can set `firstLayerWavelets = 1:size(stw[1], 2)` and `secondLayerWavelets = k`, where `k` is the index of the desired second layer wavelet. Once again, the `index` 
+parameter specifies which example in the batch to plot. It defaults to the first example in the batch. 
 """
-function plotSecondLayer1DSubsetGif(stw, St, firstLayerWavelets, secondLayerWavelets, original, saveTo="secondLayerFigures/tmp2.gif", fps=2)
+function plotSecondLayer1DSubsetGif(stw, St, firstLayerWavelets, secondLayerWavelets, original, saveTo="secondLayerFigures/tmp2.gif", fps=2, index=1)
     anim = Animation()
     for j in firstLayerWavelets, k in secondLayerWavelets
-        plotSecondLayerSpecificPath(stw, St, j, k, original)
+        plotSecondLayerSpecificPath(stw, St, j, k, original, index)
         frame(anim)
+    end
+    gif(anim, saveTo, fps=fps)
+end
+
+"""
+    plotSecondLayerFixAndVary(stw, St, firstLayerWavelets, secondLayerWavelets, saveTo="secondLayerFigures/sliceByLayer.gif", fps=2, index=1)
+Create a GIF visualizing slices of the second layer scattering results by fixing one layer's wavelet and varying the other layer's wavelet. 
+The variables `firstLayerWavelets` and `secondLayerWavelets` are arrays containing the indices of the wavelets to be visualized from the first and second layers, respectively. 
+If `firstLayerWavelets` contains only one index, the function fixes that wavelet and varies the second layer wavelets, and vice versa.
+"""
+function plotSecondLayerFixAndVary(stw, St, firstLayerWavelets, secondLayerWavelets, saveTo="secondLayerFigures/sliceByLayer.gif", fps=2, index=1)
+    f1, f2, f3 = getMeanFreq(St)
+    anim = Animation()
+
+    if length(firstLayerWavelets) == 1
+        # Fixed first layer, vary second layer. 
+        fixedFirstIdx = firstLayerWavelets[1]
+        for jj in secondLayerWavelets
+            if jj > size(stw[2], 2)
+                continue
+            end
+            toPlot = stw[2][:, jj, :, index]
+            heatmap(1:size(toPlot, 1), f1[1:end-1], toPlot', title="Second Layer Wavelet $jj, Frequency=$(round(f2[jj],sigdigits=4))Hz", 
+                    xlabel="time (samples)", ylabel="First Layer Frequency (Hz)", c=cgrad(:viridis, scale=:exp))
+            frame(anim)
+        end
+    else
+        # Fixed second layer, vary first layer.
+        for jj in firstLayerWavelets
+            if jj > size(stw[2], 3)
+                continue
+            end
+            toPlot = stw[2][:, :, jj, index]
+            heatmap(1:size(toPlot, 1), f2[1:end-1], toPlot', title="First Layer Wavelet $jj, Frequency=$(round(f1[jj],sigdigits=4))Hz", 
+                    xlabel="time (samples)", ylabel="Second Layer Frequency (Hz)", c=cgrad(:viridis, scale=:exp))
+            frame(anim)
+        end
     end
     gif(anim, saveTo, fps=fps)
 end
@@ -154,16 +193,17 @@ also as a tuple. Default values are `xVals = (.037, .852), yVals = (.056, .939)`
 If you have no colorbar, set `xVals = (.0015, .997), yVals = (.002, .992)`
 In the case that arbitrary space has been introduced, if you have a title, use `xVals = (.037, .852), yVals = (.056, .939)`, or if you have no title, use `xVals = (.0105, .882), yVals = (.056, .939)`
 """
-function plotSecondLayer(stw::ScatteredOut, St; kwargs...)
+function plotSecondLayer(stw::ScatteredOut, St, index; kwargs...)
     secondLayerRes = stw[2]
     if ndims(secondLayerRes) > 3
-        return plotSecondLayer(secondLayerRes[:, :, :, 1], St; kwargs...)
+        return plotSecondLayer(secondLayerRes[:, :, :, index], St; kwargs...)
     else
         return plotSecondLayer(secondLayerRes, St; kwargs...)
     end
 end
 
-function plotSecondLayer(stw, St; title="Second Layer results", xVals=-1, yVals=-1, logPower=true, toHeat=nothing, c=cgrad(:viridis, [0, 0.9]), threshold=0, freqsigdigits=3, linePalette=:greys, minLog=NaN, subClims=(Inf, -Inf), δt=1000, firstFreqSpacing=nothing, secondFreqSpacing=nothing, transp=true, labelRot=30, xlabel=nothing, ylabel=nothing, frameTypes=:box, miniFillAlpha=0.5, kwargs...)
+function plotSecondLayer(stw, St; title="Second Layer results", xVals=-1, yVals=-1, logPower=true, toHeat=nothing, c=cgrad(:viridis, [0, 0.9]), threshold=0, freqsigdigits=3, linePalette=:greys, 
+                         minLog=NaN, subClims=(Inf, -Inf), δt=1000, firstFreqSpacing=nothing, secondFreqSpacing=nothing, transp=true, labelRot=30, xlabel=nothing, ylabel=nothing, frameTypes=:box, miniFillAlpha=0.5, kwargs...)
     n, m = size(stw)[2:3]
     freqs = getMeanFreq(St, δt)
     freqs = map(x -> round.(x, sigdigits=freqsigdigits), freqs)[1:2]
@@ -250,18 +290,24 @@ function plotSecondLayer(stw, St; title="Second Layer results", xVals=-1, yVals=
     plt
 end
 
-function jointPlot(thingToPlot, thingName, cSymbol, St; sharedColorScaling=:exp, targetExample=1, δt=1000, freqigdigits=3, sharedColorbar=true, extraPlot=nothing, allPositive=false, logPower=false, kwargs...)
+"""
+    jointPlot(thingToPlot, thingName, cSymbol, St; sharedColorScaling=:exp, targetExample=1, δt=1000, freqigdigits=3, sharedColorbar=false, extraPlot=nothing, allPositive=false, logPower=false)
+Create a joint plot visualizing the zeroth, first, and second layer scattering results for a specified example. The variable `thingToPlot` is a tuple containing the scattering results for the 
+zeroth, first, and second layers, `thingName` is the title for the plot, `cSymbol` specifies the color gradient to use, and `St` is the scattering transform object. The function allows for 
+various customization options, including shared color scaling, target example selection, frequency digit rounding, and additional plotting options. 
+"""
+function jointPlot(thingToPlot, thingName, cSymbol, St; sharedColorScaling=:exp, targetExample=1, δt=1000, freqigdigits=3, sharedColorbar=false, extraPlot=nothing, allPositive=false, logPower=false, kwargs...)
     if sharedColorbar
         clims = (min(minimum.(thingToPlot)...), max(maximum.(thingToPlot)...))
         climszero = clims
         climsfirst = clims
         climssecond = clims
-        toHeat = [norm(thingToPlot[2][:, i, j, 1], Inf) for i = 1:size(thingToPlot[2], 2), j = 1:size(thingToPlot[2], 3)]
+        toHeat = [norm(thingToPlot[2][:, i, j, targetExample], Inf) for i = 1:size(thingToPlot[2], 2), j = 1:size(thingToPlot[2], 3)]
     else
         climszero = (min(minimum.(thingToPlot[0])...), max(maximum.(thingToPlot[0])...))
         climsfirst = (min(minimum.(thingToPlot[1])...), max(maximum.(thingToPlot[1])...))
         climssecond = (min(minimum.(thingToPlot[2])...), max(maximum.(thingToPlot[2])...))
-        toHeat = [norm(thingToPlot[2][:, i, j, 1], Inf) for i = 1:size(thingToPlot[2], 2), j = 1:size(thingToPlot[2], 3)]
+        toHeat = [norm(thingToPlot[2][:, i, j, targetExample], Inf) for i = 1:size(thingToPlot[2], 2), j = 1:size(thingToPlot[2], 3)]
     end
     firstLay = thingToPlot[1][:, :, targetExample]'
     zeroLay = thingToPlot[0][:, :, targetExample]'
@@ -306,5 +352,5 @@ function jointPlot(thingToPlot, thingName, cSymbol, St; sharedColorScaling=:exp,
     end
     titlePlot = plot(title=thingName, grid=false, showaxis=false, xticks=nothing, yticks=nothing, bottom_margin=-10Plots.px)
     lay = Plots.@layout [o{0.00001h}; [[a b; c{0.1h} d{0.1h}] b{0.04w}]]
-    plot(titlePlot, p2, p1, extraPlot, p0, colorbarOnly, layout=lay)
+    plot(titlePlot, p2, p1, extraPlot, p0, colorbarOnly, layout=lay, size=(1200,800))
 end
