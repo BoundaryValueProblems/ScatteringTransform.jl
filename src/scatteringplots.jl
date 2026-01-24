@@ -39,7 +39,7 @@ It also includes heatmaps of the gradient wavelets in both the spatial and frequ
 The variable `index` specifies which example in the batch to plot, `origLoc` is the `ScatteredOut` object 
 containing the scattering transform results, `origSig` is the original input signal, and `saveTo` is the file path to save the plot.
 """
-function plotFirstLayer1DAll(index, origLoc, origSig, saveTo="gradientFigures/tmp2.png", cline=:darkrainbow)
+function plotFirstLayer1DAll(origLoc, origSig, saveTo="gradientFigures/tmp2.png", index=1, cline=:darkrainbow)
     space = plot(origLoc[1][:, :, index], line_z=(1:size(origLoc[1], 2))', xlim=(0, length(origLoc[1][:, 1, index])+1), 
         legend=false, colorbar=true, color=cline, title="first layer gradient wavelets")
     org = plot(origSig[:,:,index], legend=false, color=:red, title="Original Signal", xlim=(0, length(origSig[:,:,index])+1))
