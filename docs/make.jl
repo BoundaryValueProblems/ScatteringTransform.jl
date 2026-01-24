@@ -13,9 +13,7 @@ makedocs(
     clean=true,
     # This ignores the ContinuousWavelets warnings during doctests
     doctestfilters = [
-        r"┌ Warning:.*",
-        r"│.*",
-        r"└ @ ContinuousWavelets.*"
+        r"(?:┌ Warning:.*\n(?:│.*\n)*└ @ ContinuousWavelets.*\n?)+"m,
     ],
     pages = Any[
          "Home" => "index.md",
