@@ -107,9 +107,21 @@ For example, we can generate a denser representation with the `plotSecondLayer` 
 
 ```@example ex
 plotSecondLayer(sf, St)
-savefig("figures/secondLayer.png") #hide
+savefig("figures/secondLayer.png"); #hide
 ```
 
 ![](figures/secondLayer.png)
 
 where the frequencies are along the axes, the heatmap gives the largest value across time for that path, and at each path is a small plot of the averaged timecourse.
+
+
+### Joint Plot
+
+Finally, we can constuct a joint plot of much of our prior information. This plot will display the zeroth layer, first layer and second layer information for a given example. 
+
+```@example ex
+jointPlot(sf, "Scattering Transform", :viridis, St)
+savefig("figures/jointPlot.png"); #hide
+```
+
+![](figures/jointPlot.png)
