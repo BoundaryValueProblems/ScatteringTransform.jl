@@ -63,7 +63,7 @@ nothing # hide
 With the plotting utilities included in this package, you are able to display the previous plot along with the original signal and the first layer wavelet gradients: 
 
 ```@example ex
-plotFirstLayer1DAll(sf, St, "figures/firstLayerAll.png")
+plotFirstLayer1DAll(sf, f, "figures/firstLayerAll.png")
 nothing # hide
 ```
 ![](figures/firstLayerAll.png)
