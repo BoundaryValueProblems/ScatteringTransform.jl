@@ -25,10 +25,10 @@ using Wavelets, Plots
 N = 2047
 f = testfunction(N, "Doppler")
 plot(f, legend=false, title="Doppler signal")
-savefig("rawDoppler.svg"); #hide
+savefig("figures/rawDoppler.svg"); #hide
 ```
 
-![](rawDoppler.svg)
+![](figures/rawDoppler.svg)
 
 First we need to make a `scatteringTransform` instance, which will create and store all of the necessary filters, subsampling operators, nonlinear functions, etc.
 The parameters are described in the `scatteringTransform` type.
@@ -55,40 +55,50 @@ plot(sf[0][:, 1, 1], title="Zeroth Layer", legend=false)
 The first layer is the average of the absolute value of the scalogram:
 
 ```@example ex
-f1, f2, f3 = getMeanFreq(St) # the mean frequencies for the wavelets in each layer
-heatmap(1:size(sf[1], 1), f1[1:end-1], sf[1][:, :, 1]', xlabel="time index", ylabel="Frequency (Hz)", color=:viridis, title="First Layer")
+plotFirstLayer(sf, St, "figures/firstLayer.png")
+nothing # hide
 ```
+![](figures/firstLayer.png)
+
+With the plotting utilities included in this package, you are able to display the previous plot along with the original signal and the first layer wavelet gradients: 
+
+```@example ex
+plotFirstLayer1DAll(sf, St, "figures/firstLayerAll.png")
+nothing # hide
+```
+![](figures/firstLayerAll.png)
+
 
 ### Second Layer
 
 The second layer is where the scattering transform begins to get more involved, and reflects both the frequency of [the envelope](https://en.wikipedia.org/wiki/Analytic_signal#Instantaneous_amplitude_and_phase) surrounding the signal and the frequency of the signal itself.
-Visualizing this is also somewhat difficult, since each path in the second layer is indexed by a pair `(s2,s1)`, where `s2` is the frequency used for the second layer wavelet, and `s1` is the frequency used for the first layer wavelet.
+With our plotting utilities, you can display the second layer with respect to specified wavelet paths from the first and second layer. After specifying the `sf` and `St` for your plot, provide an array of the desired wavelets from the first layer and an array of the desired wavelets from the second layer. 
 To this end, lets make two gifs, the first with the _first_ layer frequency varying with time:
 
 ```@example ex
-anim = Animation()
-for jj = 1:length(f1)-1
-    toPlot = dropdims(sf[pathLocs(2, (:, jj))], dims=3)
-    heatmap(1:size(sf[2], 1), f2[1:end-1], toPlot', title="index=$(jj), first layer frequency=$(round(f1[jj],sigdigits=4))Hz", xlabel="time", ylabel="Frequency (Hz)", c=cgrad(:viridis, scale=:exp))
-    frame(anim)
-end
-gif(anim, "sliceByFirst.gif", fps=1)
+plotSecondLayerFixAndVary(sf, St, 1:30, 1, "figures/sliceByFirst.gif", 1)
+nothing # hide
 ```
+![](figures/sliceByFirst.gif)
 
 By fixing the first layer frequency, we get the scalogram of a single line from the scalogram above.
-As the first layer frequency increases, the energy concentrates to the beginning of the signal and increased frequency, and generally decreases.
+As the first layer frequency increases, the energy concentrates to the beginning of the signal while the signal strength generally decreases.
 
 The second has the _second_ layer frequency varying with time:
 
 ```@example ex
-anim = Animation()
-for jj = 1:length(f2)-1
-    toPlot = dropdims(sf[pathLocs(2, (jj, :))], dims=3)
-    heatmap(1:size(sf[2], 1), f1[1:end-1], toPlot', title="index=$(jj), second layer frequency=$(round(f2[jj],sigdigits=4))Hz", c=cgrad(:viridis, scale=:exp))
-    frame(anim)
-end
-gif(anim, "sliceBySecond.gif", fps=1)
+plotSecondLayerFixAndVary(sf, St, 1, 1:28, "figures/sliceBySecond.gif", 1)
+nothing # hide
 ```
+![](figures/sliceBySecond.gif)
+
+If desired, this package allows one to plot the results of a specific path. Here is an example, where we are plotting the resulting plot if we were to use first layer wavelet 3 and second layer wavelet 1. 
+
+```@example ex
+plotSecondLayerSpecificPath(sf, St, 3, 1, f)
+savefig("figures/specificPath.png"); #hide
+```
+![](figures/specificPath.png)
 
 For any fixed second layer frequency, we get approximately the curve in the first layer scalogram, with different portions emphasized, and the overall mass decreasing as the frequency increases, corresponding to the decreasing amplitude of the envelope for the doppler signal.
 These plots can also be created using various plotting utilities defined in this package. 
@@ -97,9 +107,9 @@ For example, we can generate a denser representation with the `plotSecondLayer` 
 
 ```@example ex
 plotSecondLayer(sf, St)
-savefig("second.png") #hide
+savefig("figures/secondLayer.png") #hide
 ```
 
-![](second.png)
+![](figures/secondLayer.png)
 
 where the frequencies are along the axes, the heatmap gives the largest value across time for that path, and at each path is a small plot of the averaged timecourse.
