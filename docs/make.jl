@@ -32,6 +32,5 @@ makedocs(
 )
 
 deploydocs(;
-    # repo="github.com/BoundaryValueProblems/ScatteringTransform.jl.git"
-    repo="github.com/JaredW40/ScatteringTransform.jl.git"
+    repo="github.com/BoundaryValueProblems/ScatteringTransform.jl.git"
 )
