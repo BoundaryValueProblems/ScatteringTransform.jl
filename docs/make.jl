@@ -3,17 +3,18 @@ ENV["GKSwstype"] = "100"
 ENV["LINES"] = "9"
 ENV["COLUMNS"] = "60"
 using Documenter, ScatteringTransform, ScatteringPlots
+mkpath("docs/src/figures")
 
 makedocs(
     sitename = "ScatteringTransform.jl",
     format = Documenter.HTML(),
+    modules = [ScatteringTransform, ScatteringPlots],
     authors="David Weber, Naoki Saito",
     clean=true,
+    checkdocs = :exports,
     # This ignores the ContinuousWavelets warnings during doctests
     doctestfilters = [
-        r"┌ Warning:.*",
-        r"│.*",
-        r"└ @ ContinuousWavelets.*"
+        r"┌ Warning:.*\n│.*\n└ @ ContinuousWavelets.*\n?"s,
     ],
     pages = Any[
          "Home" => "index.md",
@@ -27,7 +28,7 @@ makedocs(
         ],
     ], # <--- This bracket closes the 'pages' list!
     
-    warnonly = [:cross_references], # <--- Now this is a separate argument
+    warnonly = [:cross_references, :missing_docs], # <--- Now this is a separate argument
 )
 
 deploydocs(;

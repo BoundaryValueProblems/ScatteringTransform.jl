@@ -62,15 +62,15 @@ julia> x = [ones(128); zeros(128)];
 
 julia> St = stFlux((256,1,1))
 ┌ Warning: there are wavelets whose peaks are far enough apart that the trough between them is less than half the height of the highest frequency wavelet
-│   minimalRegionComparedToLastPeak = 2.45709167339886
-└ @ ContinuousWavelets ~/allHail/projects/ContinuousWavelets/src/sanityChecks.jl:28
+│   minimalRegionComparedToLastPeak = 7.0515
+└ @ ContinuousWavelets ~/.julia/packages/ContinuousWavelets/KeITS/src/sanityChecks.jl:33
 ┌ Warning: there are wavelets whose peaks are far enough apart that the trough between them is less than half the height of the highest frequency wavelet
-│   minimalRegionComparedToLastPeak = 2.5356674293941244
-└ @ ContinuousWavelets ~/allHail/projects/ContinuousWavelets/src/sanityChecks.jl:28
+│   minimalRegionComparedToLastPeak = 4.815
+└ @ ContinuousWavelets ~/.julia/packages/ContinuousWavelets/KeITS/src/sanityChecks.jl:33
 ┌ Warning: there are wavelets whose peaks are far enough apart that the trough between them is less than half the height of the highest frequency wavelet
-│   minimalRegionComparedToLastPeak = 2.2954419414285616
-└ @ ContinuousWavelets ~/allHail/projects/ContinuousWavelets/src/sanityChecks.jl:28
-stFlux{2, Nd=1, filters=[12], σ = abs, batchSize = 1, normalize = true}
+│   minimalRegionComparedToLastPeak = 3.2091
+└ @ ContinuousWavelets ~/.julia/packages/ContinuousWavelets/KeITS/src/sanityChecks.jl:33
+stFlux{Nd=1, m=2, filters=[12, 11], σ = abs, batchSize = 1, normalize = true}
 
 julia> St(x)
 ScatteredOut{Array{Float32},3} 1 dim. OutputSizes:

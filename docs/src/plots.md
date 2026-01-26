@@ -1,5 +1,7 @@
 # Plotting Scattering Transforms
 
 ```@autodocs
-Modules = [ScatteringPlots]
+Modules = [ScatteringTransform, ScatteringPlots]
+Pages = ["scatteringplots.jl"]
+Order = [:function]
 ```
