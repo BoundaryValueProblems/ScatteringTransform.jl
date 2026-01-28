@@ -1,6 +1,6 @@
 name = "ScatteringTransform"
 uuid = "eadaac29-8b6b-5395-80fd-9ce36bb46293"
-version = "0.8.1"
+version = "0.8.2"
 author = ["David Weber <david.weber2@gmail.com>", "Naoki Saito <nsaito@ucdavis.edu>", "Jared White <jgwhite@ucdavis.edu>"]
 
 [deps]

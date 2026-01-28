@@ -1,6 +1,6 @@
 # ScatteringTransform.jl
 
-A julia implementation of the scattering transform, which provides a prestructured alternative to a convolutional neural network.
+A Julia implementation of the scattering transform, which provides a prestructured alternative to a convolutional neural network.
 In a similar vein to a CNN, it alternates between continuous wavelet transforms, nonlinear function applications, and subsampling.
 This library is end-to-end differentiable and runs on the GPU; there is a companion package, [ParallelScattering.jl](https://github.com/dsweber2/ParallelScattering.jl/) that runs on parallelized CPUs.
 
@@ -26,6 +26,7 @@ N = 2047
 f = testfunction(N, "Doppler")
 plot(f, legend=false, title="Doppler signal")
 savefig("figures/rawDoppler.svg"); #hide
+nothing # hide
 ```
 
 ![](figures/rawDoppler.svg)
@@ -47,7 +48,7 @@ The results `sf` are stored in the `ScatteredOut` type; for a two layer scatteri
 The zeroth layer is simply a moving average of the original signal:
 
 ```@example ex
-plot(sf[0][:, 1, 1], title="Zeroth Layer", legend=false)
+plotZerothLayer1D(sf)
 ```
 
 ### First Layer
@@ -55,18 +56,14 @@ plot(sf[0][:, 1, 1], title="Zeroth Layer", legend=false)
 The first layer is the average of the absolute value of the scalogram:
 
 ```@example ex
-plotFirstLayer(sf, St, "figures/firstLayer.png")
-nothing # hide
+plotFirstLayer(sf, St)
 ```
-![](figures/firstLayer.png)
 
 With the plotting utilities included in this package, you are able to display the previous plot along with the original signal and the first layer wavelet gradients: 
 
 ```@example ex
-plotFirstLayer1DAll(sf, f, "figures/firstLayerAll.png")
-nothing # hide
+plotFirstLayer1DAll(sf, f)
 ```
-![](figures/firstLayerAll.png)
 
 
 ### Second Layer
@@ -76,7 +73,7 @@ With our plotting utilities, you can display the second layer with respect to sp
 To this end, lets make two gifs, the first with the _first_ layer frequency varying with time:
 
 ```@example ex
-plotSecondLayerFixAndVary(sf, St, 1:30, 1, "figures/sliceByFirst.gif", 1)
+plotSecondLayerFixAndVary(sf, St, 1:30, 1, fps=1, saveTo="figures/sliceByFirst.gif")
 nothing # hide
 ```
 ![](figures/sliceByFirst.gif)
@@ -87,7 +84,7 @@ As the first layer frequency increases, the energy concentrates to the beginning
 The second has the _second_ layer frequency varying with time:
 
 ```@example ex
-plotSecondLayerFixAndVary(sf, St, 1, 1:28, "figures/sliceBySecond.gif", 1)
+plotSecondLayerFixAndVary(sf, St, 1, 1:28, fps=1, saveTo="figures/sliceBySecond.gif")
 nothing # hide
 ```
 ![](figures/sliceBySecond.gif)
@@ -96,9 +93,7 @@ If desired, this package allows one to plot the results of a specific path. Here
 
 ```@example ex
 plotSecondLayerSpecificPath(sf, St, 3, 1, f)
-savefig("figures/specificPath.png"); #hide
 ```
-![](figures/specificPath.png)
 
 For any fixed second layer frequency, we get approximately the curve in the first layer scalogram, with different portions emphasized, and the overall mass decreasing as the frequency increases, corresponding to the decreasing amplitude of the envelope for the doppler signal.
 These plots can also be created using various plotting utilities defined in this package. 
@@ -107,10 +102,7 @@ For example, we can generate a denser representation with the `plotSecondLayer` 
 
 ```@example ex
 plotSecondLayer(sf, St)
-savefig("figures/secondLayer.png"); #hide
 ```
-
-![](figures/secondLayer.png)
 
 where the frequencies are along the axes, the heatmap gives the largest value across time for that path, and at each path is a small plot of the averaged timecourse.
 
@@ -121,7 +113,4 @@ Finally, we can constuct a joint plot of much of our prior information. This plo
 
 ```@example ex
 jointPlot(sf, "Scattering Transform", :viridis, St)
-savefig("figures/jointPlot.png"); #hide
 ```
-
-![](figures/jointPlot.png)

@@ -1,7 +1,14 @@
 # Plotting Scattering Transforms
 
-```@autodocs
-Modules = [ScatteringTransform, ScatteringPlots]
-Pages = ["scatteringplots.jl"]
-Order = [:function]
+```@docs
+ScatteringTransform.plotZerothLayer1D
+ScatteringTransform.plotFirstLayer1D
+ScatteringTransform.gifFirstLayer
+ScatteringTransform.plotFirstLayer1DAll
+ScatteringTransform.plotFirstLayer
+ScatteringTransform.plotSecondLayerSpecificPath
+ScatteringTransform.plotSecondLayer1DSubsetGif
+ScatteringTransform.plotSecondLayerFixAndVary
+ScatteringTransform.plotSecondLayer
+ScatteringTransform.jointPlot
 ```
