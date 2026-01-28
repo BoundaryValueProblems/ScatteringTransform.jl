@@ -1,6 +1,7 @@
 # Plotting Scattering Transforms
 
 ```@docs
+ScatteringTransform.plotZerothLayer1D
 ScatteringTransform.plotFirstLayer1D
 ScatteringTransform.gifFirstLayer
 ScatteringTransform.plotFirstLayer1DAll

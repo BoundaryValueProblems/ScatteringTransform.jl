@@ -9,7 +9,7 @@ makedocs(
     sitename = "ScatteringTransform.jl",
     format = Documenter.HTML(),
     modules = [ScatteringTransform, ScatteringPlots],
-    authors="David Weber, Naoki Saito",
+    authors="David Weber, Naoki Saito, Jared White",
     clean=true,
     checkdocs = :exports,
     # This ignores the ContinuousWavelets warnings during doctests

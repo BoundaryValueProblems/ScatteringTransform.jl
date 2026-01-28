@@ -26,6 +26,7 @@ N = 2047
 f = testfunction(N, "Doppler")
 plot(f, legend=false, title="Doppler signal")
 savefig("figures/rawDoppler.svg"); #hide
+nothing # hide
 ```
 
 ![](figures/rawDoppler.svg)
@@ -47,8 +48,12 @@ The results `sf` are stored in the `ScatteredOut` type; for a two layer scatteri
 The zeroth layer is simply a moving average of the original signal:
 
 ```@example ex
-plot(sf[0][:, 1, 1], title="Zeroth Layer", legend=false)
+plotZerothLayer1D(sf)
+savefig("figures/zerothLayer1D.png"); #hide
+nothing # hide
 ```
+
+![](figures/zerothLayer1D.png)
 
 ### First Layer
 
@@ -97,6 +102,7 @@ If desired, this package allows one to plot the results of a specific path. Here
 ```@example ex
 plotSecondLayerSpecificPath(sf, St, 3, 1, f)
 savefig("figures/specificPath.png"); #hide
+nothing # hide
 ```
 ![](figures/specificPath.png)
 
@@ -108,6 +114,7 @@ For example, we can generate a denser representation with the `plotSecondLayer` 
 ```@example ex
 plotSecondLayer(sf, St)
 savefig("figures/secondLayer.png"); #hide
+nothing # hide
 ```
 
 ![](figures/secondLayer.png)
@@ -122,6 +129,7 @@ Finally, we can constuct a joint plot of much of our prior information. This plo
 ```@example ex
 jointPlot(sf, "Scattering Transform", :viridis, St)
 savefig("figures/jointPlot.png"); #hide
+nothing # hide
 ```
 
 ![](figures/jointPlot.png)

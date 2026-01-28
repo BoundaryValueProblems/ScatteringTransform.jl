@@ -1,4 +1,12 @@
 """
+    plotZerothLayer1D(sf, index=1)
+Function that plots the zeroth layer of the scattering transform at a specified example index. 
+"""
+function plotZerothLayer1D(sf, index=1)
+    plot(sf[0][:, 1, index], title="Zeroth Layer", legend=false, xlim=(0, length(sf[0][:, 1, index])+1), color=:lightblue, margin=5Plots.mm)
+end
+
+"""
     plotFirstLayer1D(j, origLoc, origSig, index)
 Function that plots the first layer gradient wavelet at index `j` across space, along with the original signal. 
 It also includes heatmaps of the gradient wavelet in both the spatial and frequency domains. 
@@ -18,7 +26,7 @@ function plotFirstLayer1D(j, origLoc, origSig, index=1)
 end
 
 """
-    gifFirstLayer(origLoc, origSig, saveTo="tmp.gif", fps = 2, index)
+    gifFirstLayer(origLoc, origSig, saveTo="tmp.gif", fps = 2, index=1)
 Function to create a GIF visualizing all wavelets in the first layer across space for each example in the batch. 
 The variable `origLoc` is the `ScatteredOut` object containing the scattering transform results, `index` specifies which example in the batch to plot, 
 `origSig` is the original input signal, `saveTo` specifies the file path to save the GIF, and `fps` sets the frames per second for the GIF animation. 
@@ -61,7 +69,7 @@ path to save the plot, and `index` specifies which example in the batch to plot.
 function plotFirstLayer(stw, St, saveTo="gradientFigures/firstLayer.png", index=1)
     f1, f2, f3 = getMeanFreq(St) # the mean frequencies for the wavelets in each layer. 
     plt = heatmap(1:size(stw[1], 1), f1[1:end-1], stw[1][:, :, index]', 
-            xlabel="time index", ylabel="Frequency (Hz)", 
+            xlabel="time index", ylabel="Frequency (Hz)", margin=5Plots.mm,
             color=:viridis, title="First Layer", size=(1200, 800))
     savefig(plt, saveTo)
 end
@@ -338,11 +346,11 @@ function jointPlot(thingToPlot, thingName, cSymbol, St; sharedColorScaling=:exp,
     # define the spatial locations as they correspond to the input
     spaceLocs = range(1, size(St)[1], length=length(zeroLay))
 
-    p2 = plotSecondLayer(thingToPlot[2][:, :, :, targetExample], St; title="Second Layer", toHeat=toHeat, logPower=logPower, c=c, clims=climssecond, subClims=climssecond, cbar=false, xVals=(0.000, 0.993), yVals=(0.0, 0.994), transp=true, xlabel="", kwargs...)
+    p2 = plotSecondLayer(thingToPlot[2][:, :, :, targetExample], St; title="Second Layer", toHeat=toHeat, logPower=logPower, c=c, clims=climssecond, subClims=climssecond, cbar=false, xVals=(0.000, 0.993), yVals=(0.0, 0.994), xlabel="", transp=true, kwargs...)
     freqs = getMeanFreq(St, δt)
     freqs = map(x -> round.(x, sigdigits=freqigdigits), freqs)
     p1 = heatmap(firstLay, c=c, title="First Layer", clims=climsfirst, cbar=false, yticks=((1:size(firstLay, 1)), ""), xticks=((1:size(firstLay, 2)), ""), bottom_margin=-10Plots.px)
-    p0 = heatmap(spaceLocs, 1:1, zeroLay, c=c, xlabel="time (ms)\nZeroth Layer", clims=climszero, cbar=false, yticks=nothing, top_margin=-10Plots.px, bottom_margin=10Plots.px)
+    p0 = heatmap(spaceLocs, 1:1, zeroLay, c=c, xlabel="Zeroth Layer", clims=climszero, cbar=false, yticks=nothing, top_margin=-10Plots.px, bottom_margin=10Plots.px)
     colorbarOnly = scatter([0, 0], [0, 1], zcolor=[0, 3], clims=climssecond, xlims=(1, 1.1), xshowaxis=false, yshowaxis=false, label="", c=c, grid=false, framestyle=:none)
     if extraPlot == nothing
         # extraPlot = scatter([0,0], [0,1], legend=false, grid=false, x="Layer 2 frequency", foreground_color_subplot=:white, top_margin=-10Plots.px, showaxis=false, yticks=nothing)
@@ -351,5 +359,5 @@ function jointPlot(thingToPlot, thingName, cSymbol, St; sharedColorScaling=:exp,
     end
     titlePlot = plot(title=thingName, grid=false, showaxis=false, xticks=nothing, yticks=nothing, bottom_margin=-10Plots.px)
     lay = Plots.@layout [o{0.00001h}; [[a b; c{0.1h} d{0.1h}] b{0.04w}]]
-    plot(titlePlot, p2, p1, extraPlot, p0, colorbarOnly, layout=lay, size=(1200,800))
+    plot(titlePlot, p2, p1, extraPlot, p0, colorbarOnly, layout=lay, size=(1200,800), margin=5Plots.mm)
 end

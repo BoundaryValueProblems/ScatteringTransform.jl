@@ -1,7 +1,7 @@
 name = "ScatteringTransform"
 uuid = "eadaac29-8b6b-5395-80fd-9ce36bb46293"
-version = "0.7.3"
-author = ["David Weber <david.weber2@gmail.com>", "Naoki Saito <nsaito@ucdavis.edu>"]
+version = "0.8.2"
+author = ["David Weber <david.weber2@gmail.com>", "Naoki Saito <nsaito@ucdavis.edu>", "Jared White <jgwhite@ucdavis.edu>"]
 
 [deps]
 AbstractFFTs = "621f4979-c628-5d54-868e-fcf4e3e8185c"
