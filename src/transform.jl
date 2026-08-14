@@ -83,8 +83,7 @@ ScatteredOut{Array{Float32},3} 1 dim. OutputSizes:
 function stFlux(inputSize::NTuple{N}, m=2; outputPool = 2, poolBy = 3//2, 
     σ = abs, normalize = true, flatten = false, trainable = false, kwargs...) where {N}
     #= N is the length of the NTuple, from which the spatial dimension of input
-    signals can be determined. E.g., N=3 <=> 1D signals; N=4 <=> 2D images, etc.
-    =#
+    signals can be determined. E.g., N=3 <=> 1D signals; N=4 <=> 2D images, etc. =#
     Nd = N - 2
     # Now, setting the outputPool for multi layers
     if length(outputPool) == 1 # replicate for each dimension and layer
@@ -104,7 +103,7 @@ function stFlux(inputSize::NTuple{N}, m=2; outputPool = 2, poolBy = 3//2,
     listOfSizes = [(inputSize..., ntuple(i -> 1, max(i - 1, 0))...) for i = 0:m]
     interstitial = Array{Any,1}(undef, 3 * (m + 1) - 2) 
     #= `interstitial` is an array of 3 functions per layer: 
-    1) wavelet filtering; 2) nonlinearity; 3) pooling
+    1) wavelet filtering; 2) nonlinearity; 3) pooling 
     =#
     for i = 1:m # from Layer 1 to Layer m
         # first transform
@@ -167,18 +166,80 @@ function dispatchLayer(listOfSizes, Nd::Val{1}; varargs...)
 #= For 1D input signals, we use the conventional wavelet filters available in 
 our `ContinuousWavelets.jl` package. The following function is defined in yet 
 another package of ours: `FourierFilterFlux.jl` that is related to the popluar
-`Flux.jl`.
-=#
+`Flux.jl`. =#
     waveletLayer(listOfSizes; varargs...)
 end
 
+#=  The 1D and 2D filter banks take different keyword vocabularies, and stFlux
+    forwards whatever it was given to whichever one `Nd` selects. Two of those
+    differences can cause issues:
+
+      - 1D accepts anything `ContinuousWavelets.wavelet` accepts (`cw`, `β`,
+        `averagingLength`, `frameBound`, ...) because `waveletLayer` funnels 
+        its `varargs...` there. There is no wavelet in the 2D path at all, the
+        monogenic bank is built from the Riesz kernel and Gaussian high/low
+        passes, so those arguments have no 2D meaning.
+
+      - Both have a padding/convolution boundary, but under different names.
+        `waveletLayer` calls it `convBoundary` and reserves `boundary` for the
+        wavelet boundary it hands to `wavelet`. `MonogenicLayer` calls its
+        convolution boundary `boundary`. So `boundary = PerBoundary()`, correct
+        in 1D, lands in the 2D convolution slot and fails in `effectiveSize`
+        three frames down with no hint of the real problem.
+
+    Rather than let those surface as raw MethodErrors from inside
+    MonogenicFilterFlux, this is layer will partly remedy the boundary naming 
+    issues. `convBoundary` is accepted here as the padding boundary in both 
+    dimensions, so a single spelling works either way. =#
+
+# Keywords MonogenicLayer accepts, plus `convBoundary` which is translated below.
+const MONOGENIC_KWARGS = (:scale, :boundary, :convBoundary, :init, :dType, :σ,
+    :trainable, :plan, :averagingLayer, :Monotype)
+
+# Keywords that only mean something to the 1D wavelet path.
+const WAVELET_ONLY_KWARGS = (:cw, :β, :Q, :averagingLength, :averagingType,
+    :frameBound, :normalization, :extraOctaves, :p, :s, :decreasing, :fsample,
+    :J, :bias)
+
 function dispatchLayer(listOfSizes, Nd::Val{2}; varargs...)
 #= For 2D input signals (i.e., images), we use the Monogenic Wavelet Scattering
-Networks (MWSNs) of Chak and Saito. The following function is defined in our
-package `MonogenicFilterFlux.jl`.
-=#
-    #shearingLayer(listOfSizes; varargs...)
-    MonogenicLayer(listOfSizes; varargs...)
+Networks (MWSNs) of Chak and Saito, from our `MonogenicFilterFlux.jl`. =#
+    args = Dict{Symbol,Any}(varargs)
+
+    #=  A ContinuousWavelets boundary means the caller is thinking of the 1D
+        wavelet stage, which does not exist here. Say that, rather than letting
+        it reach `effectiveSize` as a convolution boundary. =#
+    if haskey(args, :boundary) && args[:boundary] isa ContinuousWavelets.WaveletBoundary
+        error("""
+            `boundary = $(args[:boundary])` is a ContinuousWavelets wavelet boundary, and the 2D
+            (monogenic) path has no wavelet stage for it to apply to. If you meant the padding
+            used by the convolution, pass `convBoundary` instead, with one of
+            FourierFilterFlux's boundary types: `Periodic()`, `Sym()` or `Pad(n...)`.""")
+    end
+
+    unknown = setdiff(keys(args), MONOGENIC_KWARGS)
+    if !isempty(unknown)
+        waveletish = intersect(unknown, WAVELET_ONLY_KWARGS)
+        msg = "unsupported keyword argument$(length(unknown) == 1 ? "" : "s") for a 2D " *
+              "scattering transform: $(join(sort(collect(unknown)), ", "))."
+        if !isempty(waveletish)
+            msg *= "\n$(join(sort(collect(waveletish)), ", ")) configure the 1D wavelet " *
+                   "filter bank; the 2D path builds a monogenic bank instead and has no " *
+                   "wavelet to configure."
+        end
+        msg *= "\nThe 2D path accepts: scale, Monotype, convBoundary, σ, dType, " *
+               "trainable, plan, averagingLayer, init."
+        error(msg)
+    end
+
+    # one spelling for the padding boundary across both dimensions
+    if haskey(args, :convBoundary)
+        haskey(args, :boundary) && error(
+            "pass either `convBoundary` or `boundary` for the convolution padding, not both")
+        args[:boundary] = pop!(args, :convBoundary)
+    end
+
+    MonogenicLayer(listOfSizes; args...)
 end
 
 Base.size(a::Tuple{AbstractFFTs.Plan,AbstractFFTs.Plan}) = size(a[1])
@@ -202,24 +263,25 @@ function (St::stFlux{Dimension,Depth})(x::T) where {Dimension,Depth,T<:AbstractA
     end
     if get(St.settings, :flatten, false) # it may not be defined, in which case we don't do it
         batchSize = size(res[1])[end]
-        return cat((reshape(x, (:, batchSize)) for x in res)..., dims=1)
+        return cat(map(o -> reshape(o, (:, batchSize)), res)..., dims=1)
     else
         return ScatteredOut(res, ndims(mc[1]))
     end
 end
 
-# adapt changes both the eltype and the container type, while I just want a different container type
-function maybeAdapt(contType, x)
-    if contType <: CuArray && !(typeof(x) <: CuArray)
-        # should be a CuArray but isn't
-        return cu(x)
-    elseif contType <: Array && !(typeof(x) <: Array)
-        # should be an Array but isn't
-        return adapt(Array, x)
-    else
-        return x
-    end
+_container(x::AbstractArray) = Base.typename(typeof(x)).wrapper
+_container(::Type{T}) where {T<:AbstractArray} = Base.typename(T).wrapper
+
+_onDevice(x::AbstractArray) = _container(x) !== Array
+
+function maybeAdapt(reference, x)
+    want = _container(reference)
+    return want === _container(x) ? x : adapt(want, x)
 end
+
+_referenceArray(w::AbstractArray{<:Number}) = w
+_referenceArray(w) = _referenceArray(first(w))
+_referenceArray(layer::Union{ConvFFT,MonoConvFFT}) = _referenceArray(layer.weight)
 
 """
     extractAddPadding(x, adr, chunkSize, N)
@@ -240,25 +302,25 @@ trim(x, actualSize) = x[axes(x)[1:end-1]..., 1:actualSize]
 function breakAndAdapt(St::stFlux{N,D}, x) where {N,D}
     mc = St.mainChain.layers
     cpu_chunk = size(mc[1].fftPlan)[end]
-    chunkSize = if x isa CuArray
+    chunkSize = if _onDevice(x)
         min(size(x)[end], cpu_chunk * 32)  # up to 32x larger chunks on GPU
     else
         cpu_chunk
     end
     nSteps = ceil(Int, (size(x)[end]) / chunkSize) # the first entry is taken care of already
-    containerType = typeof(St.mainChain[1].weight[1])
+    reference = _referenceArray(St.mainChain[1])
     xAxes = axes(x)
     firstAddr = 1+0:min(size(x)[end], chunkSize)
     firstEx, actualSize = extractAddPadding(x, firstAddr, chunkSize, N) # x[xAxes[1:end-1]..., 1:chunkSize]
     # do the first beforehand to get the sizes
-    out = applyScattering(mc, maybeAdapt(containerType, firstEx), ndims(St), St, 0)
+    out = applyScattering(mc, maybeAdapt(reference, firstEx), ndims(St), St, 0)
     # create storage
     # outputs = map(o -> maybeAdapt(typeof(o), zeros(eltype(o), size(o)[1:end-1]..., size(x)[end]...)), out)
     outputs = map(o -> maybeAdapt(typeof(o), fill!(similar(o, size(o)[1:end-1]..., size(x)[end]), zero(eltype(o)))), out)
     # util to write out to outputs at location batchInds
     function writeOut!(out, batchInds, actualSize)
         for jj in 1:length(out)
-            mA = maybeAdapt(typeof(x), out[jj])
+            mA = maybeAdapt(x, out[jj])
             oAx = axes(outputs[jj])
             @views outputs[jj][oAx[1:end-1]..., batchInds] = trim(mA, actualSize)
         end
@@ -269,7 +331,7 @@ function breakAndAdapt(St::stFlux{N,D}, x) where {N,D}
         # clear output to force garbage collection, otherwise the gpu may be full
         addr = 1+(ii-1)*chunkSize:min(size(x)[end], ii * chunkSize)
         tmpX, actualSize = extractAddPadding(x, addr, chunkSize, N)
-        out = applyScattering(mc, maybeAdapt(containerType, tmpX), ndims(St), St, 0)
+        out = applyScattering(mc, maybeAdapt(reference, tmpX), ndims(St), St, 0)
         writeOut!(out, addr, actualSize)
     end
     return outputs

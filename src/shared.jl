@@ -1,6 +1,7 @@
 @doc """
      scatteringTransform{Dimension,Depth}
- The abstract type and constructor for scattering transforms. The specific types are `stFlux` in this package, and `stParallel` in [ParallelScattering.jl](https://github.com/dsweber2/ParallelScattering.jl/).
+ The abstract type and constructor for scattering transforms. The specific types are `stFlux` in 
+this package, and `stParallel` in [ParallelScattering.jl](https://github.com/dsweber2/ParallelScattering.jl/).
  """
 abstract type scatteringTransform{Dimension,Depth} end
 
@@ -11,6 +12,8 @@ struct stFlux{Dimension,Depth,ChainType,D,E,F} <: scatteringTransform{Dimension,
     outputPool::E
     settings::F
 end
+
+Functors.@functor stFlux (mainChain,)
 
 import Base.ndims
 @doc """
