@@ -81,6 +81,7 @@ jobs:
         shell: julia --color=yes {0}
         run: |
           using Pkg
+          Pkg.Registry.add("General")
           Pkg.Registry.add(RegistrySpec(url="https://github.com/UCD4IDS/TetrapodsRegistry"))
 
       - name: Generate the CI environment
