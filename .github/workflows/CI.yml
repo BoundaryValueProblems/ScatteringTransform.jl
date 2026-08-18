@@ -144,12 +144,6 @@ jobs:
         run: julia --project=ci --code-coverage=user -e 'include("test/runtests.jl")'
 
       - uses: julia-actions/julia-processcoverage@v1
-        with:
-          directories: >-
-            src,ext,
-            deps/ContinuousWavelets.jl/src,deps/ContinuousWavelets.jl/ext,
-            deps/FourierFilterFlux.jl/src,deps/FourierFilterFlux.jl/ext,
-            deps/MonogenicFilterFlux.jl/src,deps/MonogenicFilterFlux.jl/ext
 
       - uses: actions/upload-artifact@v4
         if: always()
