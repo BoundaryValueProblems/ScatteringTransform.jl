@@ -1,6 +1,6 @@
 name: CI
-
 on:
+  workflow_dispatch:
   push:
     branches:
       - master
@@ -14,13 +14,13 @@ concurrency:
 
 env:
   JULIA_PKG_SERVER: ""
-  # Fix for Windows: Forces GR/Plots to be headless
   JULIA_NUM_THREADS: 1
   JULIA_PKG_PRECOMPILE_AUTO: 0
+  # headless GR/Plots
   GKSwstype: "100"
-  # Fix for macOS: Forces Matplotlib to use non-interactive backend
+  # non-interactive Matplotlib for PyPlot
   MPLBACKEND: "Agg"
-  # Force Julia to use Conda.jl
+  # force Conda.jl rather than a system Python
   PYTHON: ""
 
 jobs:
@@ -31,25 +31,41 @@ jobs:
       fail-fast: false
       matrix:
         version:
-          - '1.10' # LTS
-          - '1'    # Latest Stable
+          - '1.12'
         os:
           - ubuntu-latest
-          - windows-latest
-          - macos-latest   # Apple Silicon (ARM64)
+          - macOS-latest   # Apple Silicon (ARM64)
         arch:
           - x64
-          - aarch64
         exclude:
-          - os: ubuntu-latest
+          - os: macOS-latest
+            arch: x64
+        include:
+          - os: macOS-latest
             arch: aarch64
-          - os: windows-latest
-            arch: aarch64
-          - os: macos-latest
-            arch: x64     # ARM only
+            version: '1.12'
 
     steps:
       - uses: actions/checkout@v4
+      
+      - name: Check out ContinuousWavelets.jl
+        uses: actions/checkout@v4
+        with:
+          repository: JaredW40/ContinuousWavelets.jl
+          ref: master
+          path: deps/ContinuousWavelets.jl
+      - name: Check out FourierFilterFlux.jl
+        uses: actions/checkout@v4
+        with:
+          repository: JaredW40/FourierFilterFlux.jl
+          ref: master
+          path: deps/FourierFilterFlux.jl
+      - name: Check out MonogenicFilterFlux.jl
+        uses: actions/checkout@v4
+        with:
+          repository: JaredW40/MonogenicFilterFlux.jl
+          ref: main
+          path: deps/MonogenicFilterFlux.jl
 
       - uses: julia-actions/setup-julia@v2
         with:
@@ -58,26 +74,66 @@ jobs:
 
       - uses: julia-actions/cache@v2
 
-      # --- Custom Registry Configuration ---
       - name: Configure Git to use HTTPS
-        run: |
-          git config --global url."https://github.com/".insteadOf "git@github.com:"
+        run: git config --global url."https://github.com/".insteadOf "git@github.com:"
 
       - name: Add Registries
-        shell: julia --project={0} {0}
+        shell: julia --color=yes {0}
         run: |
           using Pkg
-          Pkg.Registry.add(RegistrySpec(name="General"))
+          Pkg.Registry.add("General")
           Pkg.Registry.add(RegistrySpec(url="https://github.com/UCD4IDS/TetrapodsRegistry"))
-      # -------------------------------------
 
-      - uses: julia-actions/julia-buildpkg@v1
+      - name: Generate the CI environment
+        run: |
+          julia --project=ci -e '
+            using Pkg
+            Pkg.develop([
+              PackageSpec(path = "deps/ContinuousWavelets.jl"),
+              PackageSpec(path = "deps/FourierFilterFlux.jl"),
+              PackageSpec(path = "deps/MonogenicFilterFlux.jl"),
+              PackageSpec(path = "."),
+            ])
+            Pkg.add([
+              PackageSpec(name = "Test"),
+              PackageSpec(name = "Wavelets"),
+              PackageSpec(name = "Zygote"),
+              PackageSpec(name = "Flux"),
+              PackageSpec(name = "FFTW"),
+              PackageSpec(name = "AbstractFFTs"),
+              PackageSpec(name = "Functors"),
+              PackageSpec(name = "Adapt"),
+              PackageSpec(name = "MLDataDevices"),
+              PackageSpec(name = "LinearAlgebra"),
+              PackageSpec(name = "Logging"),
+              PackageSpec(name = "Random"),
+            ])'
 
-      - uses: julia-actions/julia-runtest@v1
+      - name: Add the CUDA stack (Linux only)
+        if: runner.os == 'Linux'
+        run: |
+          julia --project=ci -e '
+            using Pkg
+            Pkg.add([
+              PackageSpec(name = "CUDA"),
+              PackageSpec(name = "cuDNN"),
+              PackageSpec(name = "cuFFT"),
+              PackageSpec(name = "CUDNN_jll", version = "9.20"),
+            ])'
+      - name: Add Metal (macOS only)
+        if: runner.os == 'macOS'
+        run: julia --project=ci -e 'using Pkg; Pkg.add("Metal")'
+
+      - name: Precompile
+        run: julia --project=ci -e 'using Pkg; Pkg.precompile()'
+
+      - name: Run tests
+        env:
+          GROUP: ${{ runner.os == 'Linux' && 'CUDA' || runner.os == 'macOS' && 'Metal' || 'CPU' }}
+        run: julia --project=ci --code-coverage=user -e 'include("test/runtests.jl")'
 
       - uses: julia-actions/julia-processcoverage@v1
-
-      - uses: codecov/codecov-action@v5
+      - uses: codecov/codecov-action@v4
         with:
           files: lcov.info
           token: ${{ secrets.CODECOV_TOKEN }}

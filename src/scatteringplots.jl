@@ -1,6 +1,6 @@
 """
-    plotZerothLayer1D(sf; saveTo=nothing, index=1)
-Function that plots the zeroth layer of the scattering transform at a specified example index. 
+    plotOriginalSignal1D(f; title="Original Signal", saveTo=nothing, index=1)
+Function that plots the original signal at a specified example index. 
 """
 function plotOriginalSignal1D(f; title="Original Signal", saveTo=nothing, index=1)
     plt = plot(f[:,1,index], title=title, legend=false, xlim=(0, length(f[:, 1, index])+1), color=:blue, margin=5Plots.mm, size=(720,480))

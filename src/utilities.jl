@@ -6,11 +6,6 @@ function mapEvery3(to, ii, x)
         x
     end
 end
-import FourierFilterFlux.cu
-function cu(stf::stFlux{Dimension,Depth,ChainType,D,E,F}) where {Dimension,Depth,ChainType,D,E,F}
-    newChain = Chain((map(iix -> (iix[1] % 3 == 1 ? cu(iix[2]) : iix[2]), enumerate(stf.mainChain)))...)
-    return stFlux{Dimension,Depth,typeof(newChain),D,E,F}(newChain, stf.normalize, stf.outputSizes, stf.outputPool, stf.settings)
-end
 import Adapt.adapt
 function adapt(to, stf::stFlux{Dimension,Depth,ChainType,D,E,F}) where {Dimension,Depth,ChainType,D,E,F}
     newChain = Chain((map(iix -> mapEvery3(to, iix...), enumerate(stf.mainChain)))...)
@@ -75,7 +70,7 @@ julia> f2'
 function getMeanFreq(sc::stFlux{1}, δt=1000)
     waves = getWavelets(sc)[1:end-1]
     shrinkage = [size(waves[i+1], 1) / size(waves[i], 1) for i = 1:length(waves)-1]
-    δts = δt * [1, shrinkage...]
+    δts = δt .* cumprod([1.0; shrinkage])
     freqs = map(getMeanFreq, waves, δts)
     return (freqs..., [zero(freqs[1][1])])
 end
@@ -118,28 +113,6 @@ function roll(toRoll, stOutput::S) where {S<:Scattered}
     return roll(toRoll, oS, Nd)
 end
 
-#=
-function roll(toRoll, oS::Tuple, Nd)
-    toRoll = collect(toRoll)
-
-    nExamples = size(toRoll)[2:end]
-    rolled = ([fill!(similar(toRoll, eltype(toRoll),
-    	sz[1:Nd+nPathDims(ii)]...,
-    	nExamples...),0) for (ii, sz) in
-           	enumerate(oS)]...,)
-
-    locSoFar = 0
-    for (ii, x) in enumerate(rolled)
-        szThisLayer = oS[ii][1:Nd+nPathDims(ii)]
-        totalThisLayer = prod(szThisLayer)
-        range = (locSoFar+1):(locSoFar+totalThisLayer)
-        addresses = (szThisLayer..., nExamples...)
-        rolled[ii][:] = reshape(toRoll[range, :], addresses)
-        locSoFar += totalThisLayer
-    end
-    return ScatteredOut(rolled, Nd)
-end
-=#
 function roll(toRoll, oS::Tuple, Nd)
     toRoll = collect(toRoll)
 

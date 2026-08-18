@@ -3,6 +3,7 @@
 
 ## 1D Plotting Functions
 ```@docs
+ScatteringPlotsExt.plotOriginalSignal1D
 ScatteringPlotsExt.plotZerothLayer1D
 ScatteringPlotsExt.plotFirstLayer1DSingleWavelet
 ScatteringPlotsExt.gifFirstLayer1D

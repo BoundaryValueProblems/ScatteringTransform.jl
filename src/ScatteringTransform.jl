@@ -2,17 +2,15 @@ module ScatteringTransform
 
 using Core: @__doc__
 using ChainRules
-using CUDA
 using Wavelets, ContinuousWavelets
 using Zygote, Flux, LinearAlgebra, AbstractFFTs
-using Flux
 using FourierFilterFlux
 using MonogenicFilterFlux
 using Adapt
+using Functors
 using RecipesBase
 using Base: tail
 using ChainRulesCore
-# using Plots # who cares about weight really?
 using Statistics
 using Dates
 
@@ -20,6 +18,7 @@ import Adapt: adapt
 import ChainRules: rrule
 import Zygote: has_chain_rrule, rrule
 import Wavelets: eltypes
+import Flux: gpu, cpu
 
 
 include("shared.jl")
@@ -31,7 +30,7 @@ export Scattered, ScatteredFull, ScatteredOut, nonZeroPaths, cat, addNextPath
 include("pool.jl")
 export RationPool, nPoolDims, outputsize, poolSize
 include("transform.jl")
-export cu
+export gpu, cpu
 
 @doc """
      scatteringTransform(inputSize, m=2, backend::UnionAll=stFlux; kwargs...)
