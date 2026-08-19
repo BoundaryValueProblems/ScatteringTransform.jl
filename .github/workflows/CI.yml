@@ -91,7 +91,6 @@ jobs:
             ])
             Pkg.add([
               PackageSpec(name = "Test"),
-              PackageSpec(name = "BenchmarkTools"),
               PackageSpec(name = "Wavelets"),
               PackageSpec(name = "Zygote"),
               PackageSpec(name = "Flux"),

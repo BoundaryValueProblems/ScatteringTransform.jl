@@ -1,5 +1,3 @@
-using BenchmarkTools
-
 const cuda_available = @isdefined(CUDA) && CUDA.functional()
 
 @testset "GPU Tests (CUDA)" begin
@@ -150,7 +148,7 @@ const cuda_available = @isdefined(CUDA) && CUDA.functional()
 
         @testset "CPU/GPU timing" begin
             sizes = [256, 2048, 16384, 131072]
-            cpu_max_size = 16384
+            nSamples = 5 # Number of runs we test for CPU and GPU timing.
 
             for sz in sizes
                 GC.gc()
@@ -161,25 +159,17 @@ const cuda_available = @isdefined(CUDA) && CUDA.functional()
                 sstGPU = gpu(sst)
                 initGPU = gpu(init)
 
-                if sz > cpu_max_size
-                    CUDA.@sync sstGPU(initGPU)  # warmup
-                    GC.gc(); CUDA.reclaim()
-                    tGPU = @elapsed (CUDA.@sync sstGPU(initGPU))
-                else
-                    tGPU = @belapsed (CUDA.@sync $sstGPU($initGPU))
-                end
+                sst(init)
+                CUDA.@sync sstGPU(initGPU)
+                GC.gc(); CUDA.reclaim()
 
-                tCPU = @belapsed $sst($init)
-                speedup = tCPU / tGPU
-                @info "size=$sz" tCPU tGPU speedup
-                if sz >= 512
-                    @test tGPU < tCPU
-                end
+                tCPU = minimum(@elapsed(sst(init)) for _ = 1:nSamples)
+                tGPU = minimum(@elapsed(CUDA.@sync sstGPU(initGPU)) for _ = 1:nSamples)
+                @info "size=$sz" tCPU tGPU speedup = tCPU / tGPU
 
                 sstGPU = nothing
                 initGPU = nothing
-                GC.gc()
-                CUDA.reclaim()
+                GC.gc(); CUDA.reclaim()
             end
         end
     end

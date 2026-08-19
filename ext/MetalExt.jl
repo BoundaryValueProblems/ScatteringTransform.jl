@@ -15,7 +15,6 @@ non-overlapping, so this is race-free without atomics.
 MtlArray is ours, but it is the same shape as what NNlibCUDA does for CUDA, and 
 it lives in a Metal-triggered extension. =#
 
-
 using NNlib
 using NNlib: PoolDims, kernel_size, stride, dilation, padding, output_size
 

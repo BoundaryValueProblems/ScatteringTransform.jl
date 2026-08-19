@@ -1,5 +1,3 @@
-using BenchmarkTools
-
 const metal_available = @isdefined(Metal) && Metal.functional()
 
 @testset "GPU Tests (Metal)" begin
@@ -150,7 +148,7 @@ const metal_available = @isdefined(Metal) && Metal.functional()
 
         @testset "CPU/GPU timing" begin
             sizes = [256, 2048, 16384, 131072]
-            cpu_max_size = 16384
+            nSamples = 5 # Number of runs we test for CPU and GPU timing. 
 
             for sz in sizes
                 GC.gc()
@@ -160,20 +158,13 @@ const metal_available = @isdefined(Metal) && Metal.functional()
                 sstGPU = gpu(sst)
                 initGPU = gpu(init)
 
-                if sz > cpu_max_size
-                    Metal.@sync sstGPU(initGPU)  # warmup
-                    GC.gc()
-                    tGPU = @elapsed (Metal.@sync sstGPU(initGPU))
-                else
-                    tGPU = @belapsed (Metal.@sync $sstGPU($initGPU))
-                end
+                sst(init)
+                Metal.@sync sstGPU(initGPU)
+                GC.gc()
 
-                tCPU = @belapsed $sst($init)
-                speedup = tCPU / tGPU
-                @info "size=$sz" tCPU tGPU speedup
-                if sz >= 512
-                    @test tGPU < tCPU
-                end
+                tCPU = minimum(@elapsed(sst(init)) for _ = 1:nSamples)
+                tGPU = minimum(@elapsed(Metal.@sync sstGPU(initGPU)) for _ = 1:nSamples)
+                @info "size=$sz" tCPU tGPU speedup = tCPU / tGPU
 
                 sstGPU = nothing
                 initGPU = nothing

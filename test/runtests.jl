@@ -19,20 +19,29 @@ const GROUP = get(ENV, "GROUP", "All")
     include("2DTests.jl")
 
     if GROUP in ("All", "CUDA")
-        try
-            using CUDA, cuDNN, cuFFT
-            include("CUDATests.jl")
+        haveCUDA = try
+            @eval using CUDA, cuDNN, cuFFT
+            true
         catch e
             @info "CUDA/cuDNN/cuFFT not available in this environment -- skipping CUDATests.jl" exception=e
+            false
+        end
+        if haveCUDA
+            include("CUDATests.jl")
         end
     end
 
     if GROUP in ("All", "Metal")
-        try
-            using Metal
-            include("MetalTests.jl")
+        haveMetal = try
+            @eval using Metal
+            true
         catch e
-            @info "Metal not available in this environment -- skipping MetalTests.jl" exception=e
+            @info "Metal.jl not installed -- skipping Metal tests" exception = e
+            false
+        end
+        if haveMetal
+            include("MetalPlanProbe.jl")
+            include("MetalTests.jl")
         end
     end
 end
