@@ -2,7 +2,7 @@
 using ScatteringTransform
 using ContinuousWavelets
 using AbstractFFTs, FFTW
-using Test, LinearAlgebra, Statistics
+using Test, LinearAlgebra, Statistics, Adapt
 using Flux, FourierFilterFlux, MonogenicFilterFlux
 using Zygote
 
@@ -40,7 +40,6 @@ const GROUP = get(ENV, "GROUP", "All")
             false
         end
         if haveMetal
-            include("MetalPlanProbe.jl")
             include("MetalTests.jl")
         end
     end

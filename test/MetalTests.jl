@@ -146,6 +146,17 @@ const metal_available = @isdefined(Metal) && Metal.functional()
             end
         end
 
+        @testset "Metal FFT plan round-trip" begin
+            x = randn(Float32, 16, 2, 3)
+            for (P, inp) in ((plan_rfft(x, 1:1), x), (plan_fft(complex(x), 1:1), complex(x)))
+                Q = adapt(Array, Metal.mtl(P))
+                @test typeof(Q) == typeof(P)
+                @test Q.region == P.region
+                @test size(Q) == size(P)
+                @test Q * inp ≈ P * inp
+            end
+        end
+
         @testset "CPU/GPU timing" begin
             sizes = [256, 2048, 16384, 131072]
             nSamples = 5 # Number of runs we test for CPU and GPU timing. 
