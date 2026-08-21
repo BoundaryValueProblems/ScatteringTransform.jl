@@ -8,13 +8,11 @@ module CUDAExt
     FourierFilterFlux is loaded.
 
     This file's real job is triggering activation: `[extensions] CUDAExt =
-    ["CUDA", "cuDNN", "cuFFT"]` in Project.toml means all three must be
-    loaded before this extension (and therefore this package's CUDA support)
-    activates at all, so this `using` line is what actually makes that
-    happen, not a formality. It also guarantees FourierFilterFlux's and
-    ContinuousWavelets' own CUDA extensions are active by the time anything
-    in ScatteringTransform runs on the GPU, since their trigger sets
-    (CUDA+cuFFT, and CUDA+cuDNN+cuFFT, respectively) are subsets of this one. =#
-using ScatteringTransform, CUDA, cuDNN, cuFFT
+    ["CUDA", "cuFFT"]` in Project.toml means both must be loaded before this 
+    extension (and therefore this package's CUDA support) activates at all. 
+    It also guarantees FourierFilterFlux's and ContinuousWavelets' own CUDA 
+    extensions are active by the time anything in ScatteringTransform runs on 
+    the GPU, since their trigger sets are the same as this one. =#
+using ScatteringTransform, CUDA, cuFFT
 
 end

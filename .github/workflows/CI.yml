@@ -25,29 +25,24 @@ env:
 
 jobs:
   test:
-    name: Julia ${{ matrix.version }} - ${{ matrix.os }} - ${{ matrix.arch }} - ${{ github.event_name }}
+    name: Julia ${{ matrix.version }} - ${{ matrix.os }} - ${{ matrix.group }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
-        version:
-          - '1.12'
-        os:
-          - ubuntu-latest
-          - macOS-latest   # Apple Silicon (ARM64)
-        arch:
-          - x64
-        exclude:
-          - os: macOS-latest
-            arch: x64
         include:
+          - os: ubuntu-latest
+            arch: x64
+            version: '1.12'
+            group: CUDA
           - os: macOS-latest
             arch: aarch64
             version: '1.12'
+            group: Metal
 
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Check out ContinuousWavelets.jl
         uses: actions/checkout@v4
         with:
@@ -116,9 +111,7 @@ jobs:
             using Pkg
             Pkg.add([
               PackageSpec(name = "CUDA"),
-              PackageSpec(name = "cuDNN"),
               PackageSpec(name = "cuFFT"),
-              PackageSpec(name = "CUDNN_jll", version = "9.20"),
             ])'
       - name: Add Metal (macOS only)
         if: runner.os == 'macOS'
@@ -127,12 +120,35 @@ jobs:
       - name: Precompile
         run: julia --project=ci -e 'using Pkg; Pkg.precompile()'
 
+      - name: Environment status
+        run: julia --project=ci -e 'using Pkg; Pkg.status()'
+
+      - name: Report GPU availability
+        continue-on-error: true
+        run: |
+          julia --project=ci -e '
+            if Sys.islinux()
+                using CUDA
+                @info "CUDA backend" functional = CUDA.functional()
+            elseif Sys.isapple()
+                using Metal
+                @info "Metal backend" functional = Metal.functional()
+            end'
+
       - name: Run tests
         env:
-          GROUP: ${{ runner.os == 'Linux' && 'CUDA' || runner.os == 'macOS' && 'Metal' || 'CPU' }}
+          GROUP: ${{ matrix.group }}
         run: julia --project=ci --code-coverage=user -e 'include("test/runtests.jl")'
 
       - uses: julia-actions/julia-processcoverage@v1
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: lcov-${{ matrix.os }}-${{ matrix.group }}
+          path: lcov.info
+          if-no-files-found: warn
+
       - uses: codecov/codecov-action@v4
         with:
           files: lcov.info
